@@ -6,17 +6,21 @@ keyboard = Controller()
 
 cap = cv2.VideoCapture(0)
 
+width  = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) 
+height  = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) 
+
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 
 hands = mp_hands.Hands(min_detection_confidence=0.8, min_tracking_confidence=0.5)
 
 tipIds = [4, 8, 12, 16, 20]
-state = None
 
+state = None
 
 # Definir una función para contar dedos
 def countFingers(image, hand_landmarks, handNo=0):
+
     global state
 
     if hand_landmarks:
@@ -31,7 +35,7 @@ def countFingers(image, hand_landmarks, handNo=0):
                 finger_tip_y = landmarks[lm_index].y 
                 finger_bottom_y = landmarks[lm_index - 2].y
 
-                # Verificar si algun dedo está abierto o cerrado
+                # Verificar si algún dedo está abierto o cerrado
                 if lm_index !=4:
                     if finger_tip_y < finger_bottom_y:
                         fingers.append(1)
@@ -41,30 +45,29 @@ def countFingers(image, hand_landmarks, handNo=0):
                         fingers.append(0)
                         # print("El dedo con ID ",lm_index," está cerrado.")
 
+        
         totalFingers = fingers.count(1)
         
-        # Reproducir o pausar un video        
+        # Reproducir o pausar un video
         if totalFingers == 4:
             state = "Play"
 
         if totalFingers == 0 and state == "Play":
             state = "Pause"
             keyboard.press(Key.space)
+
+        # Mover un video hacia adelante o hacia atrás
+        finger_tip_x = (landmarks[8].x)*width
+ 
+        if totalFingers == 1:
+            if  finger_tip_x < width-400:
+                print("Regresar")
+                keyboard.press(Key.left)
+
+            if finger_tip_x > width-50:
+                print("Adelantar")
+                keyboard.press(Key.right)
         
-        ################################
-
-             # AGREGA CÓDIGO AQUÍ #
-
-        ################################
-        
-
-         # Mover un video hacia adelante o hacia atrás
-         
-         ################################
-
-             # AGREGA CÓDIGO AQUÍ #
-
-        ################################ 
         
 # Definir una función para
 def drawHandLanmarks(image, hand_landmarks):
